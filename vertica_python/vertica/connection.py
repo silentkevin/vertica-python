@@ -22,6 +22,7 @@ ASCII = 'ascii'
 
 def connect(**kwargs):
     """Opens a new connection to a Vertica database."""
+    print("FINDME_TCP_KEEPALIVE_DEBUGGING")
     return Connection(kwargs)
 
 
@@ -111,6 +112,20 @@ class Connection(object):
         self.transaction_status = None
         self.socket = None
 
+    #FINDME_TCP_KEEPALIVE_DEBUGGING
+    def set_keepalive_linux(self, sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+        """Set TCP keepalive on an open socket.
+
+        It activates after 1 second (after_idle_sec) of idleness,
+        then sends a keepalive ping once every 3 seconds (interval_sec),
+        and closes the connection after 5 failed ping (max_fails), or 15 seconds
+        """
+        print("FINDME_TCP_KEEPALIVE_DEBUGGING in set_keepalive_linux after_idle_sec={after_idle_sec},interval_sec={interval_sec},max_fails={max_fails}")
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, max_fails)
+
     def _socket(self):
         if self.socket is not None:
             return self.socket
@@ -121,8 +136,14 @@ class Connection(object):
         raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         raw_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         if connection_timeout is not None:
+            print("FINDME_TCP_KEEPALIVE_DEBUGGING connection timeout:" + str(connection_timeout))
             raw_socket.settimeout(connection_timeout)
         raw_socket.connect((host, port))
+
+        #FINDME_TCP_KEEPALIVE_DEBUGGING: trying timeout none after creating it
+        raw_socket.settimeout(None)
+        print("FINDME_TCP_KEEPALIVE_DEBUGGING about to call set_keepalive_linux()")
+        self.set_keepalive_linux(sock=raw_socket, after_idle_sec=1, interval_sec=15, max_fails=100)
 
         ssl_options = self.options.get('ssl')
         if ssl_options is not None and ssl_options is not False:
