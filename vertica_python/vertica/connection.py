@@ -113,7 +113,7 @@ class Connection(object):
         self.socket = None
 
     #FINDME_TCP_KEEPALIVE_DEBUGGING
-    def set_keepalive_linux(self, sock, after_idle_sec=1, interval_sec=3, max_fails=5):
+    def set_keepalive_linux(self, sock, after_idle_sec=60, interval_sec=60, max_fails=10):
         """Set TCP keepalive on an open socket.
 
         It activates after 1 second (after_idle_sec) of idleness,
@@ -136,14 +136,12 @@ class Connection(object):
         raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         raw_socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         if connection_timeout is not None:
-            print("FINDME_TCP_KEEPALIVE_DEBUGGING connection timeout:" + str(connection_timeout))
+            print("FINDME_TCP_KEEPALIVE_DEBUGGING connection_timeout={connection_timeout}".format(**locals()))
             raw_socket.settimeout(connection_timeout)
         raw_socket.connect((host, port))
 
-        #FINDME_TCP_KEEPALIVE_DEBUGGING: trying timeout none after creating it
-        raw_socket.settimeout(None)
         print("FINDME_TCP_KEEPALIVE_DEBUGGING about to call set_keepalive_linux()")
-        self.set_keepalive_linux(sock=raw_socket, after_idle_sec=1, interval_sec=15, max_fails=100)
+        self.set_keepalive_linux(sock=raw_socket, after_idle_sec=60, interval_sec=60, max_fails=10)
 
         ssl_options = self.options.get('ssl')
         if ssl_options is not None and ssl_options is not False:
