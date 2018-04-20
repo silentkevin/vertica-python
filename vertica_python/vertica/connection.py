@@ -120,7 +120,7 @@ class Connection(object):
         then sends a keepalive ping once every 3 seconds (interval_sec),
         and closes the connection after 5 failed ping (max_fails), or 15 seconds
         """
-        print("FINDME_TCP_KEEPALIVE_DEBUGGING in set_keepalive_linux after_idle_sec={after_idle_sec},interval_sec={interval_sec},max_fails={max_fails}")
+        print("FINDME_TCP_KEEPALIVE_DEBUGGING in set_keepalive_linux after_idle_sec={after_idle_sec},interval_sec={interval_sec},max_fails={max_fails}".format(**locals()))
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, after_idle_sec)
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, interval_sec)
